@@ -3,13 +3,70 @@ import tasks
 from tasks import Task
 
 
+# @pytest.fixture()
+# def tasks_db(tmpdir):
+#     """Connect to db before tests, disconnect after"""
+#     # Setup: start db
+#     tasks.start_tasks_db(str(tmpdir), 'tiny')
+#
+#     yield  # this is where the testing happens
+#
+#     # Teardown: stop db
+#     tasks.stop_tasks_db()
+
+
+@pytest.fixture(scope='session')
+def tasks_jist_a_few():
+    """All summaries and owners are unique"""
+    return (
+        Task('Write some code', 'Brian', True),
+        Task('Code review Brians code', 'Katie', False),
+        Task('Fix what Brian did', 'Michelle', False)
+    )
+
+
+@pytest.fixture(scope='session')
+def tasks_mult_per_onwer():
+    """Several owners with several tasks each"""
+    return (
+        Task('Make a cookie', 'Raphael'),
+        Task('Use an emoji', 'Raphael'),
+        Task('Move to Berlin', 'Raphael'),
+
+        Task('Create', 'Michelle'),
+        Task('Inspire', 'Michelle'),
+        Task('Encourage', 'Michelle'),
+
+        Task('Do a handstand', 'Daniel'),
+        Task('Write some books', 'Daniel'),
+        Task('Eat ice cream', 'Daniel')
+    )
+
+
 @pytest.fixture()
-def tasks_db(tmpdir):
-    """Connect to db before tests, disconnect after"""
-    # Setup: start db
-    tasks.start_tasks_db(str(tmpdir), 'tiny')
+def db_with_3_tasks(tasks_db, tasks_jist_a_few):
+    """Connected db with 3 tasks, all unique"""
+    for t in tasks_jist_a_few:
+        tasks.add(t)
 
-    yield  # this is where the testing happens
 
-    # Teardown: stop db
+@pytest.fixture()
+def db_with_multi_per_owner(tasks_db, tasks_mult_per_onwer):
+    """Connected db with 9 tasks, 3 owners, all with 3 tasks"""
+    for t in tasks_mult_per_onwer:
+        tasks.add(t)
+
+
+@pytest.fixture(scope='session')
+def tasks_db_session(tmpdir_factory):
+    """Connect to db before testsm, disconnect after"""
+    temp_dir = tmpdir_factory.mktemp('temp')
+    tasks.start_tasks_db(str(temp_dir), 'tiny')
+    yield
     tasks.stop_tasks_db()
+
+
+@pytest.fixture()
+def tasks_db(tasks_db_session):
+    """An empty tasks db"""
+    tasks.delete_all()
