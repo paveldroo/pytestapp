@@ -1,0 +1,15 @@
+attrs==21.2.0
+click==7.1.2
+coverage==5.5
+iniconfig==1.1.1
+packaging==21.0
+pluggy==1.0.0
+py==1.10.0
+pyparsing==2.4.7
+pytest==6.2.5
+pytest-cov==2.12.1
+pytest-mock==3.6.1
+six==1.16.0
+-e git+ssh://git@github.com/paveldroo/pytestapp.git@2877384572f197e9c7ad29a7e5aab186166142d2#egg=tasks&subdirectory=ch7/tasks_proj_v2
+tinydb==3.15.1
+toml==0.10.2
