@@ -8,16 +8,35 @@ import tasks.config
 
 @contextmanager
 def stub_tasks_db():
-    print('123')
     yield
 
 
 def test_list_no_args(mocker):
-    mocker.patch.object(tasks.cli, '_tasks_db', new=stub_tasks_db())
+    mocker.patch.object(tasks.cli, '_tasks_db', new=stub_tasks_db)
     mocker.patch.object(tasks.cli.tasks, 'list_tasks', return_value=[])
     runner = CliRunner()
     runner.invoke(tasks.cli.tasks_cli, ['list'])
-    list_tssks_result = tasks.cli.tasks.list_tasks()
-    assert list_tssks_result == []
-    # An error occurs here, dunno why
-    # tasks.cli._tasks_db.assert_called_once_with(None)
+    tasks.cli.tasks.list_tasks.assert_called_once_with(None)
+
+
+@pytest.fixture()
+def no_db(mocker):
+    mocker.patch.object(tasks.cli, '_tasks_db', new=stub_tasks_db)
+
+
+def test_list_print_empty(no_db, mocker):
+    mocker.patch.object(tasks.cli.tasks, 'list_tasks', return_value=[])
+    runner = CliRunner()
+    result = runner.invoke(tasks.cli.tasks_cli, ['list'])
+    expected_output = (
+        "  ID      owner  done summary\n"
+        "  --      -----  ---- -------\n"
+    )
+    assert result.output == expected_output
+
+
+def test_list_dash_dash_owner(no_db, mocker):
+    mocker.patch.object(tasks.cli.tasks, 'list_tasks')
+    runner = CliRunner()
+    runner.invoke(tasks.cli.tasks_cli, ['list', '--owner', 'okken'])
+    tasks.cli.tasks.list_tasks.assert_called_once_with('okken')
